@@ -2,245 +2,201 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Cuaderno JW</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JW Notebook Pro</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2e3d52">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --bg-color: #f4f6f9;
-            --primary-color: #2e3d52;
-            --accent-color: #4f627a;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #dddddd;
+            --primary: #4a5a7d; /* Azul JW */
+            --secondary: #6e5e8c; /* Púrpura Asamblea */
+            --bg: #f0f2f5;
+            --white: #ffffff;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; height: 100vh; }
-        
-        header { background-color: var(--primary-color); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        .selector-semana { padding: 10px 15px; background: #e9ecef; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        select { flex-grow: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; }
-        
-        .contenido { flex-grow: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-        
-        .card { background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card h3 { color: var(--primary-color); margin-bottom: 5px; font-size: 16px; border-left: 4px solid var(--accent-color); padding-left: 8px; }
-        .info-programa { font-size: 13px; color: #666; margin-bottom: 10px; font-style: italic; }
-        
-        textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; resize: none; font-size: 14px; margin-top: 5px; }
-        textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 5px rgba(79, 98, 122, 0.2); }
-        
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--primary-color); display: flex; justify-content: space-around; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
-        .nav-btn { background: none; border: none; color: #b0bec5; padding: 12px 5px; font-size: 11px; flex-grow: 1; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .nav-btn.active { color: white; font-weight: bold; background-color: rgba(255,255,255,0.05); }
-        .nav-btn span { font-size: 18px; margin-bottom: 2px; }
 
-        .config-input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid var(--border-color); border-radius: 6px; }
-        .btn { background: var(--accent-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .btn:hover { background: var(--primary-color); }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; overflow: hidden; touch-action: none; }
+        
+        /* Encabezado Estilizado */
+        header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        header h1 { font-size: 18px; margin: 0; }
+
+        /* Selector de Semanas con Iconos */
+        .week-bar { background: #fff; padding: 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ddd; }
+        select { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ccc; background: #fafafa; }
+
+        /* Contenedor de Notas */
+        .content { height: calc(100vh - 130px); overflow-y: auto; padding: 15px; padding-bottom: 100px; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--primary); font-weight: bold; }
+        .card-header i { font-size: 20px; }
+
+        textarea { width: 100%; min-height: 120px; border: 1px solid #eee; border-radius: 8px; padding: 10px; font-size: 16px; line-height: 1.5; resize: none; background: #fafafa; }
+
+        /* --- SISTEMA DE DIBUJO (LÁPIZ) --- */
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: none; flex-direction: column; }
+        canvas { flex: 1; touch-action: none; cursor: crosshair; }
+        .canvas-tools { background: #333; color: white; padding: 15px; display: flex; justify-content: space-around; align-items: center; }
+        
+        /* Navegación Inferior */
+        nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; height: 70px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #777; border: none; background: none; font-size: 12px; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
+
+        .pencil-btn { background: var(--secondary) !important; color: white !important; border-radius: 50%; width: 60px; height: 60px; margin-top: -30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 id="app-title">Mi Cuaderno Interactiva</h1>
-    </header>
+<header>
+    <h1 id="header-title"><i class="fa-solid fa-book-open"></i> Mi Cuaderno JW</h1>
+    <button onclick="sincronizar()" style="background:none; border:none; color:white; font-size:20px;"><i class="fa-solid fa-rotate"></i></button>
+</header>
 
-    <div class="selector-semana">
-        <label for="semana-select">⚡ Semana:</label>
-        <select id="semana-select" onchange="cambiarSemana()"></select>
-        <button class="btn" onclick="actualizarDesdeServidor()" style="padding: 6px 10px; font-size:12px;">🔄 Sincronizar</button>
-    </div>
+<div class="week-bar">
+    <select id="semana-select" onchange="cargarDatosSemana()"></select>
+</div>
 
-    <div class="contenido">
-        <div id="panel-entre-semana" class="tab-panel active">
-            <div class="card">
-                <h3>Tesoros de la Biblia</h3>
-                <div class="info-programa" id="info-lectura">Carga el programa para ver la lectura</div>
-                <textarea id="note-tesoros" placeholder="Escribe tus perlas encontradas..." oninput="autoGuardar()"></textarea>
-            </div>
-            <div class="card">
-                <h3>Seamos Mejores Maestros</h3>
-                <div class="info-programa" id="info-maestros">Asignaciones de la semana</div>
-                <textarea id="note-maestros" placeholder="Notas sobre preparación, vídeos o consejos..." oninput="autoGuardar()"></textarea>
-            </div>
-            <div class="card">
-                <h3>Nuestra Vida Cristiana</h3>
-                <div class="info-programa" id="info-vida">Puntos de la sección</div>
-                <textarea id="note-vida" placeholder="Notas del estudio de libro o necesidades..." oninput="autoGuardar()"></textarea>
-            </div>
+<div class="content">
+    <div id="reunion-vdm" class="tab-content">
+        <div class="card">
+            <div class="card-header"><i class="fa-solid fa-gem"></i> <span id="title-perlas">Perlas Escondidas</span></div>
+            <div id="desc-lectura" style="font-size:12px; color:#777; margin-bottom:8px;"></div>
+            <textarea id="note-perlas" placeholder="Notas de la lectura..." oninput="guardarLocall()"></textarea>
         </div>
-
-        <div id="panel-fin-semana" class="tab-panel">
-            <div class="card">
-                <h3>Discurso Público</h3>
-                <div class="info-programa" id="info-discurso">Tema asignado</div>
-                <textarea id="note-discurso" placeholder="Título, orador, textos clave y desarrollo..." oninput="autoGuardar()"></textarea>
-            </div>
-            <div class="card">
-                <h3>Estudio de La Atalaya</h3>
-                <div class="info-programa" id="info-atalaya">Artículo de estudio</div>
-                <textarea id="note-atalaya" placeholder="Párrafos clave, respuestas y aplicación personal..." oninput="autoGuardar()"></textarea>
-            </div>
-        </div>
-
-        <div id="panel-asambleas" class="tab-panel">
-            <div class="card">
-                <h3>Asamblea de Circuito / Regional</h3>
-                <input type="text" id="note-asamblea-tema" placeholder="Tema de la Asamblea" style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid var(--border-color);" oninput="autoGuardar()">
-                <textarea id="note-asambleas" style="height: 250px;" placeholder="Toma aquí todas tus notas de la asamblea por discursos..." oninput="autoGuardar()"></textarea>
-            </div>
-        </div>
-
-        <div id="panel-config" class="tab-panel">
-            <div class="card">
-                <h3>Configuración de Datos</h3>
-                <p style="font-size: 13px; margin-top:5px; color:#555;">Pega aquí la URL de la aplicación web que obtuviste de Google Apps Script:</p>
-                <input type="text" id="script-url" class="config-input" placeholder="https://script.google.com/macros/s/.../exec">
-                <button class="btn" onclick="guardarConfig()">Guardar Configuración</button>
-            </div>
-            <div class="card">
-                <h3>Uso Offline</h3>
-                <p style="font-size:13px; color:#666;">Los datos de tus notas y la programación descargada se almacenan localmente en el dispositivo de forma automática.</p>
-            </div>
+        <div class="card">
+            <div class="card-header"><i class="fa-solid fa-graduation-cap"></i> <span>Maestros</span></div>
+            <textarea id="note-maestros" placeholder="Notas sobre asignaciones..." oninput="guardarLocall()"></textarea>
         </div>
     </div>
 
-    <nav>
-        <button class="nav-btn active" onclick="switchTab(this, 'panel-entre-semana')"><span>📅</span>Entre Semana</button>
-        <button class="nav-btn" onclick="switchTab(this, 'panel-fin-semana')"><span>📖</span>Fin de Semana</button>
-        <button class="nav-btn" onclick="switchTab(this, 'panel-asambleas')"><span>🏛️</span>Asambleas</button>
-        <button class="nav-btn" onclick="switchTab(this, 'panel-config')"><span>⚙️</span>Config</button>
-    </nav>
+    <div id="reunion-fines" class="tab-content" style="display:none;">
+        <div class="card">
+            <div class="card-header"><i class="fa-solid fa-microphone-lines"></i> <span id="title-discurso">Discurso Público</span></div>
+            <textarea id="note-discurso" placeholder="Notas del discurso..." oninput="guardarLocall()"></textarea>
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="fa-solid fa-newspaper"></i> <span id="title-atalaya">Estudio de La Atalaya</span></div>
+            <textarea id="note-atalaya" placeholder="Párrafos y comentarios..." oninput="guardarLocall()"></textarea>
+        </div>
+    </div>
+</div>
 
-    <script>
-        let programaLocal = [];
-        let semanaActual = "";
+<div id="canvas-container">
+    <div class="canvas-tools">
+        <button onclick="cerrarCanvas()" style="color:white; background:none; border:none;"><i class="fa-solid fa-xmark"></i></button>
+        <span><i class="fa-solid fa-pencil"></i> Modo Lápiz</span>
+        <button onclick="limpiarCanvas()" style="color:white; background:none; border:none;"><i class="fa-solid fa-eraser"></i></button>
+        <button onclick="guardarImagenCanvas()" style="color:#aaffaa; background:none; border:none;"><i class="fa-solid fa-check"></i></button>
+    </div>
+    <canvas id="dibujoCanvas"></canvas>
+</div>
 
-        window.onload = function() {
-            // Inicializar Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js');
-            }
+<nav>
+    <button class="nav-item active" onclick="showTab('reunion-vdm', this)"><i class="fa-solid fa-calendar-week"></i>Reunión</button>
+    <button class="nav-item pencil-btn" onclick="abrirCanvas()"><i class="fa-solid fa-pen-nib"></i></button>
+    <button class="nav-item" onclick="showTab('reunion-fines', this)"><i class="fa-solid fa-bible"></i>Fin de Semana</button>
+    <button class="nav-item" onclick="window.location.reload()"><i class="fa-solid fa-gear"></i>Config</button>
+</nav>
 
-            // Cargar URL guardada
-            if(localStorage.getItem('jw_script_url')) {
-                document.getElementById('script-url').value = localStorage.getItem('jw_script_url');
-            }
+<script>
+    // --- LÓGICA DE DIBUJO ---
+    const canvas = document.getElementById('dibujoCanvas');
+    const ctx = canvas.getContext('2d');
+    let dibujando = false;
 
-            // Cargar programa local si existe
-            if(localStorage.getItem('jw_programa_cache')) {
-                programaLocal = JSON.parse(localStorage.getItem('jw_programa_cache'));
-                poblarSelectorSemanas();
-            }
-        };
-
-        function switchTab(btn, panelId) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(panelId).classList.add('active');
+    function abrirCanvas() {
+        document.getElementById('canvas-container').style.display = 'flex';
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 80;
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        
+        // Cargar dibujo previo si existe para esta semana
+        const dataURL = localStorage.getItem('dibujo_' + document.getElementById('semana-select').value);
+        if (dataURL) {
+            const img = new Image();
+            img.src = dataURL;
+            img.onload = () => ctx.drawImage(img, 0, 0);
         }
+    }
 
-        function guardarConfig() {
-            const url = document.getElementById('script-url').value.trim();
-            localStorage.setItem('jw_script_url', url);
-            alert("¡Configuración guardada con éxito!");
-            actualizarDesdeServidor();
+    function cerrarCanvas() { document.getElementById('canvas-container').style.display = 'none'; }
+
+    function limpiarCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    function guardarImagenCanvas() {
+        const dataURL = canvas.toDataURL();
+        localStorage.setItem('dibujo_' + document.getElementById('semana-select').value, dataURL);
+        cerrarCanvas();
+        alert("Dibujo guardado en la semana actual");
+    }
+
+    // Eventos de dibujo (Touch para iPad/Lápiz)
+    canvas.addEventListener('touchstart', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(e.touches[0].clientX, e.touches[0].clientY - 60); });
+    canvas.addEventListener('touchmove', (e) => {
+        if (!dibujando) return;
+        ctx.lineTo(e.touches[0].clientX, e.touches[0].clientY - 60);
+        ctx.stroke();
+    });
+    canvas.addEventListener('touchend', () => { dibujando = false; });
+
+    // --- LÓGICA DE DATOS E ICONOS ---
+    let programa = [];
+
+    async function sincronizar() {
+        const url = localStorage.getItem('jw_script_url');
+        if(!url) { alert("Configura la URL de Apps Script primero"); return; }
+        try {
+            const res = await fetch(url);
+            programa = await res.json();
+            localStorage.setItem('jw_cache', JSON.stringify(programa));
+            poblarSemanas();
+            alert("Sincronizado!");
+        } catch(e) { alert("Error al sincronizar"); }
+    }
+
+    function poblarSemanas() {
+        const select = document.getElementById('semana-select');
+        select.innerHTML = programa.map(s => `<option value="${s.fecha}">${s.fecha} - ${s.lectura}</option>`).join('');
+        cargarDatosSemana();
+    }
+
+    function cargarDatosSemana() {
+        const fecha = document.getElementById('semana-select').value;
+        const info = programa.find(p => p.fecha === fecha);
+        if(info) {
+            document.getElementById('desc-lectura').innerText = info.lectura;
+            document.getElementById('title-perlas').innerText = "Perlas: " + info.perlas;
+            document.getElementById('title-atalaya').innerText = "Atalaya: " + info.atalaya;
+            document.getElementById('title-discurso').innerText = "Discurso: " + info.discurso;
         }
+        // Cargar notas guardadas
+        document.getElementById('note-perlas').value = localStorage.getItem('n_per_'+fecha) || "";
+        document.getElementById('note-atalaya').value = localStorage.getItem('n_ata_'+fecha) || "";
+        document.getElementById('note-discurso').value = localStorage.getItem('n_dis_'+fecha) || "";
+    }
 
-        function actualizarDesdeServidor() {
-            const url = localStorage.getItem('jw_script_url');
-            if(!url) {
-                alert("Por favor, ingresa la URL de Apps Script en la pestaña de Configuración primero.");
-                return;
-            }
+    function guardarLocall() {
+        const fecha = document.getElementById('semana-select').value;
+        localStorage.setItem('n_per_'+fecha, document.getElementById('note-perlas').value);
+        localStorage.setItem('n_ata_'+fecha, document.getElementById('note-atalaya').value);
+        localStorage.setItem('n_dis_'+fecha, document.getElementById('note-discurso').value);
+    }
 
-            fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.error) { alert("Error: " + data.error); return; }
-                    programaLocal = data;
-                    localStorage.setItem('jw_programa_cache', JSON.stringify(data));
-                    poblarSelectorSemanas();
-                    alert("¡Programa sincronizado con éxito!");
-                })
-                .catch(err => {
-                    alert("No se pudo sincronizar en este momento. Se usarán los datos offline.");
-                    console.error(err);
-                });
-        }
+    function showTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        btn.classList.add('active');
+    }
 
-        function poblarSelectorSemanas() {
-            const select = document.getElementById('semana-select');
-            select.innerHTML = "";
-            
-            if(programaLocal.length === 0) {
-                let opt = document.createElement('option');
-                opt.text = "Sin datos (Sincroniza online)";
-                select.add(opt);
-                return;
-            }
-
-            programaLocal.forEach(item => {
-                let opt = document.createElement('option');
-                opt.value = item.fecha;
-                opt.text = "Semana: " + item.fecha;
-                select.add(opt);
-            });
-
-            // Intentar pre-seleccionar la semana actual o dejar la primera disponible
-            select.selectedIndex = 0;
-            cambiarSemana();
-        }
-
-        function cambiarSemana() {
-            const select = document.getElementById('semana-select');
-            semanaActual = select.value;
-            if(!semanaActual) return;
-
-            const datosSemana = programaLocal.find(item => item.fecha === semanaActual);
-            if(datosSemana) {
-                document.getElementById('info-lectura').innerText = "Lectura: " + datosSemana.lectura;
-                document.getElementById('info-maestros').innerText = "Maestros: " + datosSemana.maestros;
-                document.getElementById('info-vida').innerText = "Vida Cristiana: " + datosSemana.vida;
-                document.getElementById('info-discurso').innerText = "Tema: " + datosSemana.discurso;
-                document.getElementById('info-atalaya').innerText = "Título: " + datosSemana.atalaya;
-            }
-
-            // Cargar notas particulares de esta semana
-            document.getElementById('note-tesoros').value = localStorage.getItem(`note_${semanaActual}_tesoros`) || "";
-            document.getElementById('note-maestros').value = localStorage.getItem(`note_${semanaActual}_maestros`) || "";
-            document.getElementById('note-vida').value = localStorage.getItem(`note_${semanaActual}_vida`) || "";
-            document.getElementById('note-discurso').value = localStorage.getItem(`note_${semanaActual}_discurso`) || "";
-            document.getElementById('note-atalaya').value = localStorage.getItem(`note_${semanaActual}_atalaya`) || "";
-            
-            // Las asambleas usan notas globales
-            document.getElementById('note-asamblea-tema').value = localStorage.getItem('note_asamblea_tema') || "";
-            document.getElementById('note-asambleas').value = localStorage.getItem('note_asambleas') || "";
-        }
-
-        function autoGuardar() {
-            if(!semanaActual) {
-                // Guardar solo asambleas si no hay semana
-                localStorage.setItem('note_asamblea_tema', document.getElementById('note-asamblea-tema').value);
-                localStorage.setItem('note_asambleas', document.getElementById('note-asambleas').value);
-                return;
-            }
-
-            localStorage.setItem(`note_${semanaActual}_tesoros`, document.getElementById('note-tesoros').value);
-            localStorage.setItem(`note_${semanaActual}_maestros`, document.getElementById('note-maestros').value);
-            localStorage.setItem(`note_${semanaActual}_vida`, document.getElementById('note-vida').value);
-            localStorage.setItem(`note_${semanaActual}_discurso`, document.getElementById('note-discurso').value);
-            localStorage.setItem(`note_${semanaActual}_atalaya`, document.getElementById('note-atalaya').value);
-            
-            localStorage.setItem('note_asamblea_tema', document.getElementById('note-asamblea-tema').value);
-            localStorage.setItem('note_asambleas', document.getElementById('note-asambleas').value);
-        }
-    </script>
+    window.onload = () => {
+        const cache = localStorage.getItem('jw_cache');
+        if(cache) { programa = JSON.parse(cache); poblarSemanas(); }
+    };
+</script>
 </body>
 </html>
