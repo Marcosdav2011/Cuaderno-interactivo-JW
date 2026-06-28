@@ -3,45 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JW Notebook Pro</title>
+    <title>Cuaderno JW Pro</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --primary: #4a5a7d; 
-            --secondary: #6e5e8c; 
-            --bg: #f0f2f5;
-        }
+        :root { --primary: #4a5a7d; --secondary: #6e5e8c; --kids: #ff9800; --bg: #f0f2f5; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; touch-action: manipulation; }
-        
         header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
         header h1 { font-size: 18px; margin: 0; }
-        .week-bar { background: #fff; padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid #ddd; }
+        .week-bar { background: #fff; padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid #ddd; margin: -15px -15px 15px -15px; }
         select { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ccc; background: #fafafa; }
-
         .content { padding: 15px; padding-bottom: 90px; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
         .card.asamblea { border-left-color: var(--secondary); }
-        
+        .card.ninos { border-left-color: var(--kids); border-top: 4px solid var(--kids); }
         .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-weight: bold; color: var(--primary); }
         .card.asamblea .card-header { color: var(--secondary); font-size: 15px;}
+        .card.ninos .card-header { color: var(--kids); font-size: 18px; justify-content: center; }
         .meta-text { font-size: 12px; color: #777; margin-bottom: 10px; display: block; }
-        
-        textarea { width: 100%; min-height: 100px; border: 1px solid #eee; border-radius: 8px; padding: 10px; font-size: 16px; resize: none; background: #fafafa; box-sizing: border-box; }
-
-        /* Navegación Inferior */
+        textarea { width: 100%; min-height: 80px; border: 1px solid #eee; border-radius: 8px; padding: 10px; font-size: 16px; resize: none; background: #fafafa; box-sizing: border-box; margin-bottom:10px; }
+        .btn-dibujo { background: #eee; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; color: #333; margin-bottom: 10px; cursor: pointer; }
+        .btn-dibujo.kids { background: var(--kids); color: white; }
         nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; height: 70px; z-index: 100;}
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #777; border: none; background: none; font-size: 12px; cursor: pointer;}
         .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-item i { font-size: 22px; margin-bottom: 4px; }
         .nav-item.purple.active { color: var(--secondary); }
-
-        /* Lienzo Canvas */
+        .nav-item.orange.active { color: var(--kids); font-weight: bold; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: none; flex-direction: column; }
         canvas { flex: 1; touch-action: none; cursor: crosshair; }
         .canvas-tools { background: #333; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
         .dia-divider { background: var(--secondary); color: white; padding: 10px; border-radius: 8px; margin: 20px 0 10px 0; font-weight: bold; text-align: center; }
+        .dia-divider.kids { background: var(--kids); margin-top: 30px;}
     </style>
 </head>
 <body>
@@ -54,14 +47,14 @@
 <div class="content">
     <!-- PESTAÑA REUNIONES -->
     <div id="tab-reuniones" class="tab-content">
-        <div class="week-bar" style="margin: -15px -15px 15px -15px;">
+        <div class="week-bar">
             <select id="semana-select" onchange="cargarDatosSemana()"></select>
         </div>
         <div class="card">
             <div class="card-header"><i class="fa-solid fa-gem"></i> <span id="title-perlas">Perlas Escondidas</span></div>
             <span class="meta-text" id="desc-lectura"></span>
             <textarea id="note-perlas" placeholder="Notas de la lectura..." oninput="guardarReunion()"></textarea>
-            <button onclick="abrirCanvas('perlas')" style="margin-top:10px; border:none; background:#eee; padding:8px; border-radius:5px; width:100%;"><i class="fa-solid fa-pen"></i> Dibujar Esquema</button>
+            <button onclick="abrirCanvas('perlas')" class="btn-dibujo"><i class="fa-solid fa-pen"></i> Dibujar Esquema</button>
         </div>
         <div class="card">
             <div class="card-header"><i class="fa-solid fa-microphone-lines"></i> <span id="title-discurso">Discurso Público</span></div>
@@ -76,8 +69,61 @@
     <!-- PESTAÑA ASAMBLEAS -->
     <div id="tab-asambleas" class="tab-content" style="display:none;">
         <div id="contenedor-asamblea">
-            <!-- Aquí se generan las tarjetas de la asamblea automáticamente -->
             <p style="text-align:center; color:#777; margin-top:50px;">Sincroniza para cargar el programa de la Asamblea</p>
+        </div>
+    </div>
+
+    <!-- PESTAÑA NIÑOS -->
+    <div id="tab-ninos" class="tab-content" style="display:none;">
+        <div class="card ninos">
+            <div class="card-header"><i class="fa-solid fa-child-reaching"></i> ¡Actividades del Domingo!</div>
+            <p style="text-align:center; color:#555; font-size:13px;">Espacio interactivo para que Miguel, Yurubiy y Jayden tomen sus mejores notas.</p>
+            
+            <div class="dia-divider kids">SESIÓN DE LA MAÑANA</div>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">1. Los cuatro tipos de terreno 🌱</p>
+            <p style="font-size:13px; color:#555;">Dibuja la tierra excelente (5 años) o anota qué distrae a las personas (10 años):</p>
+            <button onclick="abrirCanvas('ninos_terreno')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_terreno" placeholder="Mis notas del terreno..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">2. El trigo y la mala hierba 🌾</p>
+            <p style="font-size:13px; color:#555;">Dibuja un campo o escribe qué cualidades son buenas (Trigo):</p>
+            <button onclick="abrirCanvas('ninos_trigo')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_trigo" placeholder="Mis notas del trigo..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">3. El grano de mostaza 🌳</p>
+            <p style="font-size:13px; color:#555;">Dibuja un árbol gigante y frondoso o anota cómo crece la congregación:</p>
+            <button onclick="abrirCanvas('ninos_mostaza')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_mostaza" placeholder="Mis notas de la mostaza..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">4. La levadura 🍞</p>
+            <p style="font-size:13px; color:#555;">Dibuja un pan inflado o escribe cómo una buena acción crece mucho:</p>
+            <button onclick="abrirCanvas('ninos_levadura')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_levadura" placeholder="Mis notas de la levadura..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">5. La red de pesca 🐟</p>
+            <p style="font-size:13px; color:#555;">Dibuja peces de colores en la red o anota qué actitudes elige Jehová:</p>
+            <button onclick="abrirCanvas('ninos_red')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_red" placeholder="Mis notas de la red..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">6. Discurso Público: ¿Ha encontrado el tesoro? 💎</p>
+            <p style="font-size:13px; color:#555;">Dibuja un cofre muy brillante o escribe cuál es tu mayor tesoro espiritual:</p>
+            <button onclick="abrirCanvas('ninos_tesoro')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_tesoro" placeholder="Mi mayor tesoro es..."></textarea>
+
+            <div class="dia-divider kids">SESIÓN DE LA TARDE</div>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">7. Película: Las buenas noticias según Jesús 🎬</p>
+            <p style="font-size:13px; color:#555;">Dibuja tu escena favorita o haz una reseña del episodio 6:</p>
+            <button onclick="abrirCanvas('ninos_peli')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_peli" placeholder="Mi parte favorita del video fue..."></textarea>
+
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">8. ¿Qué hemos aprendido? 👁️</p>
+            <p style="font-size:13px; color:#555;">Dibuja unos ojos felices o anota 3 cosas que aprendiste de la asamblea hoy:</p>
+            <button onclick="abrirCanvas('ninos_resumen')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
+            <textarea id="ninos_txt_resumen" placeholder="1. 
+2. 
+3. "></textarea>
         </div>
     </div>
 </div>
@@ -86,7 +132,7 @@
 <div id="canvas-container">
     <div class="canvas-tools">
         <button onclick="cerrarCanvas()" style="color:white; background:none; border:none; font-size:20px;"><i class="fa-solid fa-xmark"></i></button>
-        <span><i class="fa-solid fa-pencil"></i> Modo Lápiz</span>
+        <span><i class="fa-solid fa-pencil"></i> Pizarra</span>
         <button onclick="limpiarCanvas()" style="color:white; background:none; border:none; font-size:20px;"><i class="fa-solid fa-eraser"></i></button>
         <button onclick="guardarImagenCanvas()" style="color:#aaffaa; background:none; border:none; font-size:20px;"><i class="fa-solid fa-check"></i></button>
     </div>
@@ -96,14 +142,12 @@
 <nav>
     <button class="nav-item active" onclick="showTab('tab-reuniones', this)"><i class="fa-solid fa-calendar-week"></i>Reuniones</button>
     <button class="nav-item purple" onclick="showTab('tab-asambleas', this)"><i class="fa-solid fa-building-columns"></i>Asamblea</button>
+    <button class="nav-item orange" onclick="showTab('tab-ninos', this)"><i class="fa-solid fa-gamepad"></i>Niños</button>
 </nav>
 
 <script>
-    let programaReuniones = [];
-    let programaAsambleas = [];
-    let idCanvasActual = "";
+    let programaReuniones = [], programaAsambleas = [], idCanvasActual = "";
 
-    // LÓGICA DE DIBUJO
     const canvas = document.getElementById('dibujoCanvas');
     const ctx = canvas.getContext('2d');
     let dibujando = false;
@@ -113,8 +157,8 @@
         document.getElementById('canvas-container').style.display = 'flex';
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - 60;
-        ctx.strokeStyle = "#2e3d52";
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "#ff9800"; // Naranja para niños
+        ctx.lineWidth = 4; // Trazo grueso para facilitar el dibujo
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         
@@ -132,7 +176,6 @@
     function guardarImagenCanvas() {
         localStorage.setItem(idCanvasActual, canvas.toDataURL());
         cerrarCanvas();
-        alert("Dibujo guardado");
     }
 
     canvas.addEventListener('touchstart', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(e.touches[0].clientX, e.touches[0].clientY - 60); });
@@ -144,34 +187,25 @@
     }, {passive: false});
     canvas.addEventListener('touchend', () => { dibujando = false; });
 
-    // LÓGICA DE DATOS
     async function sincronizar() {
         const url = localStorage.getItem('jw_script_url');
         if(!url) { 
-            const inputUrl = prompt("Pega aquí la URL de Google Apps Script para conectarte:");
+            const inputUrl = prompt("Pega aquí la URL de Apps Script:");
             if(inputUrl) { localStorage.setItem('jw_script_url', inputUrl); sincronizar(); }
             return; 
         }
-        
-        document.getElementById('header-title').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...';
-        
+        document.getElementById('header-title').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
         try {
             const res = await fetch(url);
             const data = await res.json();
-            
             if(data.reuniones) programaReuniones = data.reuniones;
             if(data.asambleas) programaAsambleas = data.asambleas;
-            
             localStorage.setItem('jw_reuniones', JSON.stringify(programaReuniones));
             localStorage.setItem('jw_asambleas', JSON.stringify(programaAsambleas));
-            
-            poblarSemanas();
-            renderizarAsamblea();
+            poblarSemanas(); renderizarAsamblea();
             document.getElementById('header-title').innerHTML = '<i class="fa-solid fa-book-open"></i> Cuaderno JW';
-            alert("¡Programa actualizado!");
         } catch(e) { 
             document.getElementById('header-title').innerHTML = '<i class="fa-solid fa-book-open"></i> Cuaderno JW';
-            alert("Error al conectar. Verifica tu internet o la URL."); 
         }
     }
 
@@ -205,24 +239,20 @@
     function renderizarAsamblea() {
         const contenedor = document.getElementById('contenedor-asamblea');
         if(!programaAsambleas || programaAsambleas.length === 0) return;
-        
         contenedor.innerHTML = "";
         let diaActual = "";
-
         programaAsambleas.forEach((item, index) => {
             if(item.dia !== diaActual) {
                 diaActual = item.dia;
                 contenedor.innerHTML += `<div class="dia-divider">${diaActual.toUpperCase()}</div>`;
             }
-
             const valorNota = localStorage.getItem('n_asm_' + index) || "";
-            
             contenedor.innerHTML += `
                 <div class="card asamblea">
                     <div class="card-header"><i class="fa-solid fa-microphone"></i> ${item.titulo}</div>
                     <span class="meta-text"><i class="fa-regular fa-clock"></i> ${item.hora} | ${item.sesion}</span>
                     <textarea id="asm_${index}" placeholder="Toma tus notas aquí..." oninput="localStorage.setItem('n_asm_${index}', this.value)">${valorNota}</textarea>
-                    <button onclick="abrirCanvas('asm_${index}')" style="margin-top:10px; border:none; background:#eee; padding:8px; border-radius:5px; width:100%; color: var(--secondary);"><i class="fa-solid fa-pen-nib"></i> Dibujar Apuntes</button>
+                    <button onclick="abrirCanvas('asm_${index}')" class="btn-dibujo"><i class="fa-solid fa-pen-nib"></i> Dibujar Apuntes</button>
                 </div>
             `;
         });
@@ -240,6 +270,16 @@
         const cacheA = localStorage.getItem('jw_asambleas');
         if(cacheR) { programaReuniones = JSON.parse(cacheR); poblarSemanas(); }
         if(cacheA) { programaAsambleas = JSON.parse(cacheA); renderizarAsamblea(); }
+        
+        // Cargar y guardar las notas específicas de los niños
+        const idsNinos = ['terreno', 'trigo', 'mostaza', 'levadura', 'red', 'tesoro', 'peli', 'resumen'];
+        idsNinos.forEach(id => {
+            const el = document.getElementById('ninos_txt_' + id);
+            if(el) {
+                el.value = localStorage.getItem('ninos_txt_' + id) || "";
+                el.addEventListener('input', (e) => localStorage.setItem('ninos_txt_' + id, e.target.value));
+            }
+        });
     };
 </script>
 </body>
