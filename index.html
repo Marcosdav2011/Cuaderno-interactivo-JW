@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --primary: #4a5a7d; --secondary: #6e5e8c; --kids: #ff9800; --bg: #f0f2f5; }
+        :root { --primary: #4a5a7d; --secondary: #6e5e8c; --kids: #ff9800; --tracker-color: #e91e63; --bg: #f0f2f5; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; touch-action: manipulation; }
         header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
         header h1 { font-size: 18px; margin: 0; }
@@ -17,9 +17,11 @@
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
         .card.asamblea { border-left-color: var(--secondary); }
         .card.ninos { border-left-color: var(--kids); border-top: 4px solid var(--kids); }
+        .card.tracker-card { border-left-color: var(--tracker-color); border-top: 4px solid var(--tracker-color); }
         .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-weight: bold; color: var(--primary); }
         .card.asamblea .card-header { color: var(--secondary); font-size: 15px;}
         .card.ninos .card-header { color: var(--kids); font-size: 18px; justify-content: center; }
+        .card.tracker-card .card-header { color: var(--tracker-color); font-size: 18px; justify-content: center; }
         .meta-text { font-size: 12px; color: #777; margin-bottom: 10px; display: block; }
         textarea { width: 100%; min-height: 80px; border: 1px solid #eee; border-radius: 8px; padding: 10px; font-size: 16px; resize: none; background: #fafafa; box-sizing: border-box; margin-bottom:10px; }
         .btn-dibujo { background: #eee; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; color: #333; margin-bottom: 10px; cursor: pointer; }
@@ -30,6 +32,15 @@
         .nav-item.purple.active { color: var(--secondary); }
         .nav-item.orange.active { color: var(--kids); font-weight: bold; }
         .nav-item i { font-size: 22px; margin-bottom: 4px; }
+        
+        /* CUADRÍCULA CAZADOR DE PALABRAS */
+        .tracker-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
+        .tracker-btn { background: #fff; border: 2px solid #eee; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); -webkit-user-select: none; user-select: none; }
+        .tracker-btn:active { background: #fff5f7; transform: scale(0.96); border-color: var(--tracker-color); }
+        .tracker-sym { font-size: 28px; margin-bottom: 4px; }
+        .tracker-word { font-size: 14px; font-weight: bold; color: #444; }
+        .tracker-count { font-size: 22px; font-weight: bold; margin-top: 6px; color: var(--tracker-color); background: #ffe4ec; padding: 2px 14px; border-radius: 20px; min-width: 35px; text-align: center; }
+
         #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: none; flex-direction: column; }
         canvas { flex: 1; touch-action: none; cursor: crosshair; }
         .canvas-tools { background: #333; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -75,55 +86,104 @@
 
     <!-- PESTAÑA NIÑOS -->
     <div id="tab-ninos" class="tab-content" style="display:none;">
+        
+        <!-- JUEGO: CAZADOR DE PALABRAS -->
+        <div class="card tracker-card">
+            <div class="card-header"><i class="fa-solid fa-ear-listen"></i> ¡Cazador de Palabras!</div>
+            <p style="text-align:center; color:#555; font-size:12px; margin-bottom:10px;">¡Escucha con atención! Cada vez que el orador diga una palabra, tócala para sumarla.</p>
+            
+            <div class="tracker-grid">
+                <div class="tracker-btn" onclick="contarPalabra('jehova')">
+                    <span class="tracker-sym">❌</span>
+                    <span class="tracker-word">Jehová</span>
+                    <span id="count_jehova" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('jesus')">
+                    <span class="tracker-sym">✔️</span>
+                    <span class="tracker-word">Jesús</span>
+                    <span id="count_jesus" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('satanas')">
+                    <span class="tracker-sym">⭕</span>
+                    <span class="tracker-word">Satanás</span>
+                    <span id="count_satanas" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('angeles')">
+                    <span class="tracker-sym">🔺</span>
+                    <span class="tracker-word">Ángeles</span>
+                    <span id="count_angeles" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('felicidad')">
+                    <span class="tracker-sym">⭐</span>
+                    <span class="tracker-word">Felicidad</span>
+                    <span id="count_felicidad" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('reino')">
+                    <span class="tracker-sym">👑</span>
+                    <span class="tracker-word">Reino</span>
+                    <span id="count_reino" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('biblia')">
+                    <span class="tracker-sym">📖</span>
+                    <span class="tracker-word">Biblia</span>
+                    <span id="count_biblia" class="tracker-count">0</span>
+                </div>
+                <div class="tracker-btn" onclick="contarPalabra('amor')">
+                    <span class="tracker-sym">❤️</span>
+                    <span class="tracker-word">Amor</span>
+                    <span id="count_amor" class="tracker-count">0</span>
+                </div>
+            </div>
+            <button onclick="resetContadores()" style="margin-top:15px; width:100%; border:none; padding:8px; border-radius:8px; background:#eee; color:#666; font-weight:bold; font-size:12px; cursor:pointer;">Reiniciar Marcadores</button>
+        </div>
+
+        <!-- CUADERNO DOMINGO DETALLADO -->
         <div class="card ninos">
             <div class="card-header"><i class="fa-solid fa-child-reaching"></i> ¡Actividades del Domingo!</div>
-            <p style="text-align:center; color:#555; font-size:13px;">Espacio interactivo para que Miguel, Yurubiy y Jayden tomen sus mejores notas.</p>
             
-            <div class="dia-divider kids">SESIÓN DE LA MAÑANA</div>
+            <div class="dia-divider kids">SESIÓN DE LA MAÑANA[cite: 1]</div>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">1. Los cuatro tipos de terreno 🌱</p>
-            <p style="font-size:13px; color:#555;">Dibuja la tierra excelente (5 años) o anota qué distrae a las personas (10 años):</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">1. Los cuatro tipos de terreno 🌱[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja la tierra excelente o escribe qué distrae al corazón:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_terreno')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_terreno" placeholder="Mis notas del terreno..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">2. El trigo y la mala hierba 🌾</p>
-            <p style="font-size:13px; color:#555;">Dibuja un campo o escribe qué cualidades son buenas (Trigo):</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">2. El trigo y la mala hierba 🌾[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja el trigo bueno o escribe qué buenas cualidades debemos tener:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_trigo')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_trigo" placeholder="Mis notas del trigo..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">3. El grano de mostaza 🌳</p>
-            <p style="font-size:13px; color:#555;">Dibuja un árbol gigante y frondoso o anota cómo crece la congregación:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">3. El grano de mostaza 🌳[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja un árbol gigante lleno de aves o anota cómo crece la predicación:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_mostaza')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_mostaza" placeholder="Mis notas de la mostaza..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">4. La levadura 🍞</p>
-            <p style="font-size:13px; color:#555;">Dibuja un pan inflado o escribe cómo una buena acción crece mucho:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">4. La levadura 🍞[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja un pan delicioso o escribe cómo una buena acción ayuda a otros:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_levadura')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_levadura" placeholder="Mis notas de la levadura..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">5. La red de pesca 🐟</p>
-            <p style="font-size:13px; color:#555;">Dibuja peces de colores en la red o anota qué actitudes elige Jehová:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">5. La red de pesca 🐟[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja peces de colores en la red o escribe qué actitudes le gustan a Jehová:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_red')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_red" placeholder="Mis notas de la red..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">6. Discurso Público: ¿Ha encontrado el tesoro? 💎</p>
-            <p style="font-size:13px; color:#555;">Dibuja un cofre muy brillante o escribe cuál es tu mayor tesoro espiritual:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">6. Discurso Público: ¿Ha encontrado el tesoro? 💎[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja un hermoso cofre del tesoro o escribe qué regalo de Jehová valoras más:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_tesoro')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
             <textarea id="ninos_txt_tesoro" placeholder="Mi mayor tesoro es..."></textarea>
 
-            <div class="dia-divider kids">SESIÓN DE LA TARDE</div>
+            <div class="dia-divider kids">SESIÓN DE LA TARDE[cite: 1]</div>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">7. Película: Las buenas noticias según Jesús 🎬</p>
-            <p style="font-size:13px; color:#555;">Dibuja tu escena favorita o haz una reseña del episodio 6:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">7. Película: Las buenas noticias según Jesús 🎬[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja tu escena favorita del Episodio 6 o escribe qué milagro te impactó:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_peli')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
-            <textarea id="ninos_txt_peli" placeholder="Mi parte favorita del video fue..."></textarea>
+            <textarea id="ninos_txt_peli" placeholder="Mi parte favorita de la película fue..."></textarea>
 
-            <p style="font-weight:bold; font-size:15px; margin-top:15px;">8. ¿Qué hemos aprendido? 👁️</p>
-            <p style="font-size:13px; color:#555;">Dibuja unos ojos felices o anota 3 cosas que aprendiste de la asamblea hoy:</p>
+            <p style="font-weight:bold; font-size:15px; margin-top:15px;">8. ¿Qué hemos aprendido? 👁️[cite: 1]</p>
+            <p style="font-size:13px; color:#555;">Dibuja unos ojos felices o anota 3 ideas bonitas de toda la asamblea:[cite: 1]</p>
             <button onclick="abrirCanvas('ninos_resumen')" class="btn-dibujo kids"><i class="fa-solid fa-palette"></i> Pizarra de Dibujo</button>
-            <textarea id="ninos_txt_resumen" placeholder="1. 
-2. 
-3. "></textarea>
+            <textarea id="ninos_txt_resumen" placeholder="1. &#10;2. &#10;3. "></textarea>
         </div>
     </div>
 </div>
@@ -147,6 +207,7 @@
 
 <script>
     let programaReuniones = [], programaAsambleas = [], idCanvasActual = "";
+    const palabrasTracker = ['jehova', 'jesus', 'satanas', 'angeles', 'felicidad', 'reino', 'biblia', 'amor'];
 
     const canvas = document.getElementById('dibujoCanvas');
     const ctx = canvas.getContext('2d');
@@ -157,8 +218,8 @@
         document.getElementById('canvas-container').style.display = 'flex';
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight - 60;
-        ctx.strokeStyle = "#ff9800"; // Naranja para niños
-        ctx.lineWidth = 4; // Trazo grueso para facilitar el dibujo
+        ctx.strokeStyle = "#ff9800"; 
+        ctx.lineWidth = 4; 
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         
@@ -186,6 +247,29 @@
         ctx.stroke();
     }, {passive: false});
     canvas.addEventListener('touchend', () => { dibujando = false; });
+
+    // LÓGICA DEL CAZADOR DE PALABRAS
+    function contarPalabra(id) {
+        let current = parseInt(localStorage.getItem('count_' + id) || "0");
+        current++;
+        localStorage.setItem('count_' + id, current);
+        document.getElementById('count_' + id).innerText = current;
+    }
+
+    function resetContadores() {
+        if(confirm("¿Seguro que quieres reiniciar el contador de palabras?")) {
+            palabrasTracker.forEach(id => {
+                localStorage.setItem('count_' + id, "0");
+                document.getElementById('count_' + id).innerText = "0";
+            });
+        }
+    }
+
+    function cargarContadores() {
+        palabrasTracker.forEach(id => {
+            document.getElementById('count_' + id).innerText = localStorage.getItem('count_' + id) || "0";
+        });
+    }
 
     async function sincronizar() {
         const url = localStorage.getItem('jw_script_url');
@@ -271,7 +355,8 @@
         if(cacheR) { programaReuniones = JSON.parse(cacheR); poblarSemanas(); }
         if(cacheA) { programaAsambleas = JSON.parse(cacheA); renderizarAsamblea(); }
         
-        // Cargar y guardar las notas específicas de los niños
+        cargarContadores();
+
         const idsNinos = ['terreno', 'trigo', 'mostaza', 'levadura', 'red', 'tesoro', 'peli', 'resumen'];
         idsNinos.forEach(id => {
             const el = document.getElementById('ninos_txt_' + id);
